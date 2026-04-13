@@ -1,0 +1,58 @@
+---
+title: "Authenticate requests to the Proyecto ARES REST API"
+description: "ARES uses DRF's default session and basic authentication backends. Learn how to send authenticated requests and what to configure for production."
+---
+
+ARES uses Django REST Framework's default authentication backends: `SessionAuthentication` and `BasicAuthentication`. No custom authentication classes are configured in `settings.py`, so the API inherits DRF's defaults. In the standard development configuration, endpoints are accessible without credentials unless you add permission classes that require authentication.
+
+## Development access
+
+With `DEBUG = True` and DRF's default `AllowAny`-equivalent permission policy, all endpoints are reachable without credentials. You can make requests directly:
+
+```bash
+curl http://localhost:8000/api/robots/
+```
+
+This returns the full list of robots without any `Authorization` header.
+
+## Basic authentication
+
+HTTP Basic Auth sends a base64-encoded `username:password` pair in the `Authorization` header. Pass the `-u` flag to curl and it handles the encoding automatically:
+
+```bash
+curl -u admin:yourpassword http://localhost:8000/api/robots/
+```
+
+To create a record with Basic Auth:
+
+```bash
+curl -u admin:yourpassword \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"nombre": "ARES-02", "estado": "inactivo", "latitud": 19.43, "longitud": -99.13}' \
+  http://localhost:8000/api/robots/
+```
+
+## Session authentication
+
+When you access the API through a web browser, Django's session authentication is used automatically. After logging in at `/admin/` or via any of Django's built-in login views, the browser sends the session cookie with each subsequent request. DRF's `SessionAuthentication` backend reads that cookie and identifies the user.
+
+This makes the DRF browsable API at `http://localhost:8000/api/` fully interactive once you are logged in to the admin.
+
+## Django admin
+
+The `/admin/` interface uses Django's standard session authentication. To access it, you need a superuser account. Create one with:
+
+```bash
+python manage.py createsuperuser
+```
+
+Follow the prompts to set a username, email, and password. You can then log in at `http://localhost:8000/admin/` and use the session for browsable API access as described above.
+
+<Warning>
+  The default `SessionAuthentication` and `BasicAuthentication` backends are not suitable for public-facing deployments. Basic Auth transmits credentials on every request and is only safe over HTTPS. Session auth is browser-oriented and not appropriate for API clients. For production, configure token-based authentication such as DRF's built-in `TokenAuthentication` or a JWT library like `djangorestframework-simplejwt`.
+</Warning>
+
+<Note>
+  For guidance on securing the API for production — including HTTPS, token auth setup, and permission classes — see the [deployment guide](/guides/deployment).
+</Note>

@@ -1,0 +1,127 @@
+---
+title: "Deploy Proyecto ARES to production: Gunicorn setup"
+description: "Harden ARES for production: disable debug mode, rotate the secret key, configure allowed hosts, switch databases, and serve via Gunicorn."
+---
+
+Django's built-in development server is single-threaded, not hardened against attack, and will expose sensitive debugging information if left in its default configuration. This guide covers the minimum steps required to make Proyecto ARES safe and stable for a production environment.
+
+<Warning>
+  The default `settings.py` ships with `DEBUG = True` and a hardcoded `SECRET_KEY`. Deploying with these defaults will expose full stack traces to anyone who triggers an error and leave your application cryptographically insecure. Complete every step in this checklist before accepting real traffic.
+</Warning>
+
+## Production checklist
+
+<Steps>
+  <Step title="Set DEBUG = False">
+    When `DEBUG` is `True`, Django returns detailed error pages with local variable values and full tracebacks — useful for development, dangerous in production. Set it to `False` in `settings.py` or, preferably, via an environment variable so the value never lives in source control:
+
+    ```python
+    import os
+
+    DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
+    ```
+
+    With `DEBUG = False`, Django returns generic `500` and `404` responses instead of detailed error pages.
+  </Step>
+
+  <Step title="Generate a new SECRET_KEY">
+    Django uses `SECRET_KEY` to sign cookies, sessions, and CSRF tokens. The key committed to the repository is public and must be replaced. Generate a new one:
+
+    ```bash
+    python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+    ```
+
+    Store the output in an environment variable and load it in `settings.py`:
+
+    ```python
+    import os
+
+    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+    ```
+
+    Never commit the secret key value to version control.
+  </Step>
+
+  <Step title="Configure ALLOWED_HOSTS">
+    With `DEBUG = False`, Django rejects all requests whose `Host` header does not appear in `ALLOWED_HOSTS`. Add your server's domain name or IP address:
+
+    ```python
+    ALLOWED_HOSTS = ["ares.example.com", "203.0.113.42"]
+    ```
+
+    Using `["*"]` disables host header validation entirely and should not be used in production.
+  </Step>
+
+  <Step title="Use a production database">
+    SQLite is a file-based database that does not handle concurrent writes well. For any environment with more than one user or process, switch to PostgreSQL or MySQL.
+
+    Install the PostgreSQL adapter:
+
+    ```bash
+    pip install psycopg2-binary
+    ```
+
+    Update the `DATABASES` setting in `settings.py`:
+
+    ```python
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["DB_NAME"],
+            "USER": os.environ["DB_USER"],
+            "PASSWORD": os.environ["DB_PASSWORD"],
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
+    ```
+
+    After updating the config, run `python manage.py migrate` against the new database to create all tables.
+  </Step>
+
+  <Step title="Collect static files">
+    Django's development server serves static files automatically, but production WSGI servers do not. Set `STATIC_ROOT` in `settings.py` and run:
+
+    ```bash
+    python manage.py collectstatic
+    ```
+
+    This copies all static assets into `STATIC_ROOT` so your web server (nginx, Apache, or a CDN) can serve them directly.
+  </Step>
+
+  <Step title="Run with Gunicorn">
+    Gunicorn is a production-grade WSGI server that handles concurrent requests and integrates with reverse proxies like nginx.
+
+    Install Gunicorn:
+
+    ```bash
+    pip install gunicorn
+    ```
+
+    Start the application:
+
+    ```bash
+    gunicorn ares_backend.wsgi:application --bind 0.0.0.0:8000
+    ```
+
+    For a more robust setup, add `--workers` (typically `2 × CPU cores + 1`) and use a process manager such as systemd or Supervisor to keep Gunicorn running across reboots.
+  </Step>
+</Steps>
+
+## WSGI configuration
+
+`ares_backend/wsgi.py` is already configured and sets the `DJANGO_SETTINGS_MODULE` environment variable to `ares_backend.settings`. Both Gunicorn and uWSGI reference this file directly:
+
+```bash
+# Gunicorn
+gunicorn ares_backend.wsgi:application --bind 0.0.0.0:8000
+
+# uWSGI
+uwsgi --module ares_backend.wsgi:application --http :8000
+```
+
+You do not need to modify `wsgi.py` unless you need to inject middleware or custom startup logic at the server level.
+
+<Note>
+  ARES also ships with `ares_backend/asgi.py` for ASGI-compatible deployment. ASGI servers such as Daphne or Uvicorn support async views, WebSockets, and long-polling — useful if you plan to stream live sensor readings. To use ASGI, reference the application object with `uvicorn ares_backend.asgi:application --host 0.0.0.0 --port 8000`.
+</Note>

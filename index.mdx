@@ -1,97 +1,54 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Proyecto ARES: REST API for rescue robot management"
+description: "ARES is a Django REST Framework backend that tracks rescue robots, sensors, and real-time sensor readings through a clean REST API."
 ---
 
-## Setting up
+Proyecto ARES provides a REST API backend for managing autonomous rescue robots in the field. It lets you register robots with location data, attach sensors to them, and continuously ingest sensor readings — all through a straightforward HTTP API built with Django REST Framework.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Make your first API call to ARES in under five minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Explore all endpoints for robots, sensors, and readings.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Data Model" icon="database" href="/concepts/data-model">
+    Understand how robots, sensors, and readings relate to each other.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Setup Guide" icon="gear" href="/guides/setup">
+    Get the ARES backend running locally with Django and SQLite.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How ARES works
 
-Everything you need to create world-class documentation.
+ARES models the lifecycle of a rescue operation through three core resources:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Register robots">
+    Add rescue robots to the system with their name, operational status, and GPS coordinates. Each robot is tracked independently.
+  </Step>
+  <Step title="Attach sensors">
+    Link sensors to robots by specifying the sensor type (e.g., temperature, gas) and its measurement unit. A robot can have multiple sensors.
+  </Step>
+  <Step title="Ingest readings">
+    Submit sensor readings as they arrive from the field. Each reading records the measured value, timestamp, and whether it has been processed.
+  </Step>
+</Steps>
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Robot fleet tracking" icon="robot">
+    Track robot name, status, and real-time GPS position (latitude/longitude) for every unit in the field.
+  </Card>
+  <Card title="Sensor registry" icon="microchip">
+    Associate typed sensors with specific robots, recording measurement units for accurate data interpretation.
+  </Card>
+  <Card title="Continuous readings" icon="chart-line">
+    Store timestamped sensor readings with a processing flag to track which data has been acted on.
+  </Card>
+  <Card title="Full CRUD API" icon="arrows-rotate">
+    Every resource supports create, read, update, and delete operations via standard REST conventions.
+  </Card>
+</CardGroup>

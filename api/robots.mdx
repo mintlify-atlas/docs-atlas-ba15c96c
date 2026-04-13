@@ -1,0 +1,171 @@
+---
+title: "Robots API: full CRUD reference for /api/robots/ endpoints"
+description: "Full CRUD reference for /api/robots/. Register robots with GPS coordinates and status, retrieve fleet listings, update position, and delete units."
+---
+
+The `/api/robots/` resource represents the rescue robots managed by Proyecto ARES. Each Robot has a name, an operational status, GPS coordinates (latitude and longitude), and an auto-generated registration timestamp. Use these endpoints to register new robots, track their location and state, and remove them from the fleet.
+
+## Robot object
+
+<ResponseField name="id" type="integer">
+  Auto-generated unique identifier for the robot.
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  The robot's name. Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current operational status of the robot (e.g., `"activo"`, `"inactivo"`, `"en_mision"`). Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="latitud" type="number">
+  GPS latitude coordinate as a floating-point value.
+</ResponseField>
+
+<ResponseField name="longitud" type="number">
+  GPS longitude coordinate as a floating-point value.
+</ResponseField>
+
+<ResponseField name="fecha_registro" type="string">
+  ISO 8601 timestamp of when the robot was registered. Set automatically on creation; read-only.
+</ResponseField>
+
+## List robots — GET /api/robots/
+
+Returns an array of all robots in the fleet.
+
+```bash
+curl -X GET http://localhost:8000/api/robots/
+```
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "ARES-01",
+    "estado": "activo",
+    "latitud": 19.4326,
+    "longitud": -99.1332,
+    "fecha_registro": "2026-04-13T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "nombre": "ARES-02",
+    "estado": "inactivo",
+    "latitud": 19.4285,
+    "longitud": -99.1277,
+    "fecha_registro": "2026-04-13T11:30:00Z"
+  }
+]
+```
+
+## Create a robot — POST /api/robots/
+
+Registers a new robot in the fleet.
+
+<ParamField path="nombre" type="string" required>
+  The robot's name. Maximum 255 characters.
+</ParamField>
+
+<ParamField path="estado" type="string" required>
+  Initial operational status of the robot (e.g., `"activo"`, `"inactivo"`). Maximum 255 characters.
+</ParamField>
+
+<ParamField path="latitud" type="number" required>
+  GPS latitude coordinate as a floating-point value.
+</ParamField>
+
+<ParamField path="longitud" type="number" required>
+  GPS longitude coordinate as a floating-point value.
+</ParamField>
+
+```bash
+curl -X POST http://localhost:8000/api/robots/ \
+  -H "Content-Type: application/json" \
+  -d '{"nombre": "ARES-01", "estado": "activo", "latitud": 19.4326, "longitud": -99.1332}'
+```
+
+```json
+{
+  "id": 1,
+  "nombre": "ARES-01",
+  "estado": "activo",
+  "latitud": 19.4326,
+  "longitud": -99.1332,
+  "fecha_registro": "2026-04-13T10:00:00Z"
+}
+```
+
+## Retrieve a robot — GET /api/robots/{id}/
+
+Returns the details of a single robot by its ID.
+
+```bash
+curl -X GET http://localhost:8000/api/robots/1/
+```
+
+```json
+{
+  "id": 1,
+  "nombre": "ARES-01",
+  "estado": "activo",
+  "latitud": 19.4326,
+  "longitud": -99.1332,
+  "fecha_registro": "2026-04-13T10:00:00Z"
+}
+```
+
+## Update a robot — PUT /api/robots/{id}/
+
+Replaces all fields of an existing robot. All writable fields are required.
+
+```bash
+curl -X PUT http://localhost:8000/api/robots/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"nombre": "ARES-01", "estado": "en_mision", "latitud": 19.5000, "longitud": -99.2000}'
+```
+
+```json
+{
+  "id": 1,
+  "nombre": "ARES-01",
+  "estado": "en_mision",
+  "latitud": 19.5,
+  "longitud": -99.2,
+  "fecha_registro": "2026-04-13T10:00:00Z"
+}
+```
+
+## Partial update — PATCH /api/robots/{id}/
+
+Updates one or more fields without replacing the entire resource. The example below updates only the robot's status.
+
+```bash
+curl -X PATCH http://localhost:8000/api/robots/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"estado": "inactivo"}'
+```
+
+```json
+{
+  "id": 1,
+  "nombre": "ARES-01",
+  "estado": "inactivo",
+  "latitud": 19.4326,
+  "longitud": -99.1332,
+  "fecha_registro": "2026-04-13T10:00:00Z"
+}
+```
+
+## Delete a robot — DELETE /api/robots/{id}/
+
+Permanently removes a robot from the fleet. Returns `204 No Content` on success.
+
+```bash
+curl -X DELETE http://localhost:8000/api/robots/1/
+```
+
+<Warning>
+  Deleting a robot triggers a CASCADE delete. All sensors attached to the robot and all readings associated with those sensors will also be permanently deleted.
+</Warning>

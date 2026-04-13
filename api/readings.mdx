@@ -1,0 +1,157 @@
+---
+title: "Readings API: ingest and track sensor data from robots"
+description: "Full CRUD reference for /api/lecturas/. Submit sensor readings, retrieve historical data, and mark readings as processed via PATCH on estado_procesamiento."
+---
+
+The `/api/lecturas/` resource represents individual data points collected from sensors in the ARES fleet. Each `LecturaSensor` captures a numeric value, an auto-generated timestamp, a flag indicating whether the reading has been processed by downstream systems, and a reference to the sensor that produced it. Use these endpoints to submit new readings, inspect historical data, and track processing status.
+
+## Reading object
+
+<ResponseField name="id" type="integer">
+  Auto-generated unique identifier for the reading.
+</ResponseField>
+
+<ResponseField name="valor" type="number">
+  The numeric sensor reading as a floating-point value.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  ISO 8601 timestamp of when the reading was recorded. Set automatically on creation; read-only.
+</ResponseField>
+
+<ResponseField name="estado_procesamiento" type="boolean">
+  Whether this reading has been processed by downstream systems. Set to `false` on submission; update to `true` once processed.
+</ResponseField>
+
+<ResponseField name="sensor" type="integer">
+  ID of the sensor that produced this reading.
+</ResponseField>
+
+## List readings — GET /api/lecturas/
+
+Returns an array of all sensor readings.
+
+```bash
+curl -X GET http://localhost:8000/api/lecturas/
+```
+
+```json
+[
+  {
+    "id": 1,
+    "valor": 36.5,
+    "fecha": "2026-04-13T10:05:00Z",
+    "estado_procesamiento": false,
+    "sensor": 1
+  },
+  {
+    "id": 2,
+    "valor": 42.1,
+    "fecha": "2026-04-13T10:10:00Z",
+    "estado_procesamiento": true,
+    "sensor": 1
+  }
+]
+```
+
+## Submit a reading — POST /api/lecturas/
+
+Records a new sensor reading.
+
+<ParamField path="valor" type="number" required>
+  The numeric sensor reading as a floating-point value.
+</ParamField>
+
+<ParamField path="estado_procesamiento" type="boolean" required>
+  Processing state at the time of submission. Typically `false` for new readings that have not yet been handled.
+</ParamField>
+
+<ParamField path="sensor" type="integer" required>
+  The ID of the sensor that produced this reading.
+</ParamField>
+
+```bash
+curl -X POST http://localhost:8000/api/lecturas/ \
+  -H "Content-Type: application/json" \
+  -d '{"valor": 36.5, "estado_procesamiento": false, "sensor": 1}'
+```
+
+```json
+{
+  "id": 1,
+  "valor": 36.5,
+  "fecha": "2026-04-13T10:05:00Z",
+  "estado_procesamiento": false,
+  "sensor": 1
+}
+```
+
+## Retrieve a reading — GET /api/lecturas/{id}/
+
+Returns the details of a single reading by its ID.
+
+```bash
+curl -X GET http://localhost:8000/api/lecturas/1/
+```
+
+```json
+{
+  "id": 1,
+  "valor": 36.5,
+  "fecha": "2026-04-13T10:05:00Z",
+  "estado_procesamiento": false,
+  "sensor": 1
+}
+```
+
+## Update a reading — PUT /api/lecturas/{id}/
+
+Replaces all fields of an existing reading. All writable fields are required. A common use case is marking a reading as processed after your system has handled it.
+
+```bash
+curl -X PUT http://localhost:8000/api/lecturas/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"valor": 36.5, "estado_procesamiento": true, "sensor": 1}'
+```
+
+```json
+{
+  "id": 1,
+  "valor": 36.5,
+  "fecha": "2026-04-13T10:05:00Z",
+  "estado_procesamiento": true,
+  "sensor": 1
+}
+```
+
+## Partial update — PATCH /api/lecturas/{id}/
+
+Updates one or more fields without replacing the entire resource. The example below marks a reading as processed.
+
+```bash
+curl -X PATCH http://localhost:8000/api/lecturas/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"estado_procesamiento": true}'
+```
+
+```json
+{
+  "id": 1,
+  "valor": 36.5,
+  "fecha": "2026-04-13T10:05:00Z",
+  "estado_procesamiento": true,
+  "sensor": 1
+}
+```
+
+<Tip>
+  Use PATCH to mark readings as processed after your system handles them. This lets you query unprocessed readings (`estado_procesamiento: false`) as a lightweight work queue without modifying the original sensor value or timestamp.
+</Tip>
+
+## Delete a reading — DELETE /api/lecturas/{id}/
+
+Permanently removes a reading. Returns `204 No Content` on success.
+
+```bash
+curl -X DELETE http://localhost:8000/api/lecturas/1/
+```

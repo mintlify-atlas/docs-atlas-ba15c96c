@@ -1,0 +1,88 @@
+---
+title: "Set up Proyecto ARES locally with Django and SQLite"
+description: "Install Proyecto ARES on your machine: create a virtual environment, install dependencies, run Django migrations, and start the development server."
+---
+
+This guide walks you through running Proyecto ARES on your local machine. By the end, you will have the Django REST Framework API running at `http://localhost:8000`, with a SQLite database and all three endpoints — robots, sensors, and sensor readings — ready to use. You will need Python 3.10 or higher and pip installed before you start.
+
+<Note>
+  **Prerequisites**
+  - Python 3.10 or higher
+  - pip (bundled with Python 3.4+)
+  - git
+</Note>
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/rootKarka/Proyeecto-ARES.git && cd Proyeecto-ARES
+    ```
+  </Step>
+
+  <Step title="Create and activate a virtual environment">
+    A virtual environment keeps the project's dependencies isolated from your system Python installation.
+
+    <Tabs>
+      <Tab title="macOS / Linux">
+        ```bash
+        python3 -m venv venv && source venv/bin/activate
+        ```
+      </Tab>
+      <Tab title="Windows">
+        ```bash
+        python -m venv venv && venv\Scripts\activate
+        ```
+      </Tab>
+    </Tabs>
+
+    Your prompt will change to show `(venv)` once the environment is active.
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    This installs Django, Django REST Framework, and all other packages declared in `requirements.txt`.
+  </Step>
+
+  <Step title="Apply database migrations">
+    ```bash
+    python manage.py migrate
+    ```
+
+    Django reads the migration files for `robots`, `sensores`, and `lecturas` and creates a `db.sqlite3` file in the project root with all required tables. You should see a series of `OK` messages confirming each migration was applied.
+  </Step>
+
+  <Step title="Create a superuser (optional)">
+    A superuser account lets you log in to the Django admin panel at `/admin/` and manage data through a browser interface.
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+
+    Follow the prompts to set a username, email address, and password.
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    python manage.py runserver
+    ```
+
+    Django starts a lightweight development server at `http://localhost:8000`. You will see output confirming the server is running and which Django version is in use. Leave this terminal open while you work.
+  </Step>
+</Steps>
+
+<Tip>
+  The Django REST Framework ships with a browsable API interface. Open `http://localhost:8000/api/` in your browser to explore all available endpoints interactively. If you created a superuser, you can also access the full admin panel at `http://localhost:8000/admin/`.
+</Tip>
+
+## Verify the setup
+
+With the server running, confirm the robots endpoint responds correctly:
+
+```bash
+curl http://localhost:8000/api/robots/
+```
+
+A successful response returns an empty JSON array `[]` if no robots have been created yet, or a list of robot objects if seed data is present. A `200 OK` status confirms the API is wired up and the database is reachable.

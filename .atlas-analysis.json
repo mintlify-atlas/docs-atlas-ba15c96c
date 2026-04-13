@@ -1,0 +1,87 @@
+{
+  "projectType": "api-service",
+  "projectName": "Proyecto ARES",
+  "projectDescription": "A Django REST Framework backend for the ARES rescue robot system, exposing REST APIs to manage rescue robots, their sensors, and real-time sensor readings.",
+  "theme": "luma",
+  "primaryColor": "#D94F3D",
+  "lightColor": "#F4A89A",
+  "darkColor": "#8B1A0E",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/architecture",
+              "concepts/data-model"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/setup",
+              "guides/deployment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "api/robots",
+              "api/sensors",
+              "api/readings"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Robot fleet management with location tracking (latitude/longitude) and status monitoring",
+    "Sensor registry linking sensors (type and unit) to specific robots",
+    "Continuous sensor readings ingestion with processing state tracking",
+    "Full CRUD REST API powered by Django REST Framework ViewSets",
+    "Auto-generated browsable API and router-based URL configuration",
+    "SQLite-backed data persistence with Django ORM migrations"
+  ],
+  "publicApiSurface": [
+    "GET /api/robots/ — List all rescue robots",
+    "POST /api/robots/ — Register a new rescue robot",
+    "GET /api/robots/{id}/ — Retrieve a robot by ID",
+    "PUT /api/robots/{id}/ — Update robot details",
+    "PATCH /api/robots/{id}/ — Partially update a robot",
+    "DELETE /api/robots/{id}/ — Remove a robot",
+    "GET /api/sensores/ — List all sensors",
+    "POST /api/sensores/ — Register a new sensor",
+    "GET /api/sensores/{id}/ — Retrieve a sensor by ID",
+    "PUT /api/sensores/{id}/ — Update sensor details",
+    "PATCH /api/sensores/{id}/ — Partially update a sensor",
+    "DELETE /api/sensores/{id}/ — Remove a sensor",
+    "GET /api/lecturas/ — List all sensor readings",
+    "POST /api/lecturas/ — Submit a new sensor reading",
+    "GET /api/lecturas/{id}/ — Retrieve a reading by ID",
+    "PUT /api/lecturas/{id}/ — Update a reading",
+    "PATCH /api/lecturas/{id}/ — Partially update a reading",
+    "DELETE /api/lecturas/{id}/ — Remove a reading"
+  ]
+}

@@ -1,0 +1,91 @@
+---
+title: "ARES data model: Robot, Sensor, and LecturaSensor fields"
+description: "ARES structures data in a three-level hierarchy — Robot, Sensor, LecturaSensor — with cascade deletes enforcing referential integrity across the fleet."
+---
+
+ARES organizes its data in a strict three-level hierarchy: a `Robot` sits at the top, each robot owns one or more `Sensor` instances, and each sensor produces many `LecturaSensor` readings over time. This design reflects the physical structure of a rescue robot — a single unit carries multiple sensors of different types, each generating a continuous stream of measurements. Foreign keys with `CASCADE` deletion enforce referential integrity at the database level.
+
+## Model hierarchy
+
+The three models are linked by two foreign key relationships:
+
+- `Sensor.robot` → `Robot` (on_delete=CASCADE): a sensor cannot exist without a robot.
+- `LecturaSensor.sensor` → `Sensor` (on_delete=CASCADE): a reading cannot exist without a sensor.
+
+These cascade rules mean that deleting a `Robot` automatically deletes all of its `Sensor` records, which in turn automatically deletes all associated `LecturaSensor` records. The same cascade applies when deleting a `Sensor` directly.
+
+## Robot
+
+The `Robot` model represents a single rescue robot in the fleet.
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated integer primary key. Assigned by the database on creation.
+</ResponseField>
+
+<ResponseField name="nombre" type="string" required>
+  Human-readable robot name. Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="estado" type="string" required>
+  Operational status of the robot (e.g., `"activo"`, `"inactivo"`, `"en_mision"`). Maximum 255 characters. ARES does not enforce a fixed set of values at the model level.
+</ResponseField>
+
+<ResponseField name="latitud" type="float" required>
+  Current GPS latitude of the robot as a decimal degree float.
+</ResponseField>
+
+<ResponseField name="longitud" type="float" required>
+  Current GPS longitude of the robot as a decimal degree float.
+</ResponseField>
+
+<ResponseField name="fecha_registro" type="datetime" required>
+  Timestamp set automatically when the robot record is first created (`auto_now_add=True`). Not writable via the API.
+</ResponseField>
+
+## Sensor
+
+The `Sensor` model represents a physical sensor attached to a robot.
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated integer primary key.
+</ResponseField>
+
+<ResponseField name="tipo" type="string" required>
+  Sensor category (e.g., `"temperatura"`, `"gas"`, `"humedad"`). Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="unidad" type="string" required>
+  Unit of measurement for readings produced by this sensor (e.g., `"°C"`, `"ppm"`, `"%"`). Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="robot" type="integer (FK → Robot)" required>
+  Foreign key to the parent `Robot`. Deleting the referenced robot deletes this sensor and all its readings.
+</ResponseField>
+
+## LecturaSensor
+
+The `LecturaSensor` model stores an individual reading captured by a sensor.
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated integer primary key.
+</ResponseField>
+
+<ResponseField name="valor" type="float" required>
+  Numeric value measured by the sensor at the time of the reading.
+</ResponseField>
+
+<ResponseField name="fecha" type="datetime" required>
+  Timestamp set automatically when the reading record is created (`auto_now_add=True`). Not writable via the API.
+</ResponseField>
+
+<ResponseField name="estado_procesamiento" type="boolean" required>
+  Indicates whether this reading has been processed by downstream systems. `false` means the reading is pending; `true` means it has been consumed or acknowledged.
+</ResponseField>
+
+<ResponseField name="sensor" type="integer (FK → Sensor)" required>
+  Foreign key to the parent `Sensor`. Deleting the referenced sensor deletes this reading.
+</ResponseField>
+
+<Warning>
+  Deleting a `Robot` permanently removes all of its sensors and every reading those sensors have ever recorded. Deleting a `Sensor` directly removes all of its readings. These operations cannot be undone — there is no soft-delete or recycle bin. Always confirm the target record before issuing a DELETE request.
+</Warning>

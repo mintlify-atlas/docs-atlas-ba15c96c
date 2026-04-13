@@ -1,0 +1,147 @@
+---
+title: "Sensors API: full CRUD reference for /api/sensores/"
+description: "Full CRUD reference for /api/sensores/. Attach typed sensors with measurement units to robots, update configurations, and delete sensors from the fleet."
+---
+
+The `/api/sensores/` resource represents the sensors attached to robots in the ARES fleet. Each Sensor is identified by its type and measurement unit, and is linked to a specific robot via a foreign key. Use these endpoints to register sensors on robots, update their configuration, and remove them when no longer needed.
+
+## Sensor object
+
+<ResponseField name="id" type="integer">
+  Auto-generated unique identifier for the sensor.
+</ResponseField>
+
+<ResponseField name="tipo" type="string">
+  The sensor type (e.g., `"temperatura"`, `"gas"`, `"humedad"`). Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="unidad" type="string">
+  The measurement unit reported by the sensor (e.g., `"°C"`, `"ppm"`, `"%"`). Maximum 255 characters.
+</ResponseField>
+
+<ResponseField name="robot" type="integer">
+  ID of the robot this sensor belongs to.
+</ResponseField>
+
+## List sensors — GET /api/sensores/
+
+Returns an array of all sensors across the fleet.
+
+```bash
+curl -X GET http://localhost:8000/api/sensores/
+```
+
+```json
+[
+  {
+    "id": 1,
+    "tipo": "temperatura",
+    "unidad": "°C",
+    "robot": 1
+  },
+  {
+    "id": 2,
+    "tipo": "gas",
+    "unidad": "ppm",
+    "robot": 1
+  }
+]
+```
+
+## Create a sensor — POST /api/sensores/
+
+Registers a new sensor and attaches it to an existing robot.
+
+<ParamField path="tipo" type="string" required>
+  The sensor type (e.g., `"temperatura"`, `"gas"`, `"humedad"`). Maximum 255 characters.
+</ParamField>
+
+<ParamField path="unidad" type="string" required>
+  The measurement unit for this sensor's readings (e.g., `"°C"`, `"ppm"`, `"%"`). Maximum 255 characters.
+</ParamField>
+
+<ParamField path="robot" type="integer" required>
+  The ID of the robot to attach this sensor to.
+</ParamField>
+
+```bash
+curl -X POST http://localhost:8000/api/sensores/ \
+  -H "Content-Type: application/json" \
+  -d '{"tipo": "temperatura", "unidad": "°C", "robot": 1}'
+```
+
+```json
+{
+  "id": 1,
+  "tipo": "temperatura",
+  "unidad": "°C",
+  "robot": 1
+}
+```
+
+## Retrieve a sensor — GET /api/sensores/{id}/
+
+Returns the details of a single sensor by its ID.
+
+```bash
+curl -X GET http://localhost:8000/api/sensores/1/
+```
+
+```json
+{
+  "id": 1,
+  "tipo": "temperatura",
+  "unidad": "°C",
+  "robot": 1
+}
+```
+
+## Update a sensor — PUT /api/sensores/{id}/
+
+Replaces all fields of an existing sensor. All writable fields are required.
+
+```bash
+curl -X PUT http://localhost:8000/api/sensores/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"tipo": "temperatura", "unidad": "K", "robot": 1}'
+```
+
+```json
+{
+  "id": 1,
+  "tipo": "temperatura",
+  "unidad": "K",
+  "robot": 1
+}
+```
+
+## Partial update — PATCH /api/sensores/{id}/
+
+Updates one or more fields without replacing the entire resource. The example below updates only the measurement unit.
+
+```bash
+curl -X PATCH http://localhost:8000/api/sensores/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"unidad": "°F"}'
+```
+
+```json
+{
+  "id": 1,
+  "tipo": "temperatura",
+  "unidad": "°F",
+  "robot": 1
+}
+```
+
+## Delete a sensor — DELETE /api/sensores/{id}/
+
+Permanently removes a sensor. Returns `204 No Content` on success.
+
+```bash
+curl -X DELETE http://localhost:8000/api/sensores/1/
+```
+
+<Warning>
+  Deleting a sensor triggers a CASCADE delete. All readings recorded by this sensor will also be permanently deleted.
+</Warning>

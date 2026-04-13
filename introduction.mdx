@@ -1,0 +1,41 @@
+---
+title: "Proyecto ARES: REST API for rescue robot operations"
+description: "ARES is a Django REST Framework API for rescue robot operations — register robots, attach sensors, and ingest field readings in real time."
+---
+
+Proyecto ARES is a rescue operations backend built with Django REST Framework. It exposes three core resources — robots, sensors, and sensor readings — through a fully RESTful HTTP API, giving teams a reliable foundation for managing autonomous robot fleets and the data they produce in the field.
+
+## Core resources
+
+<CardGroup cols={2}>
+  <Card title="Robots" icon="robot" href="/api/robots">
+    Register and track rescue robots with their name, operational status, and GPS coordinates.
+  </Card>
+  <Card title="Sensors" icon="microchip" href="/api/sensors">
+    Attach typed sensors to robots, recording measurement units for accurate data interpretation.
+  </Card>
+  <Card title="Readings" icon="chart-line" href="/api/readings">
+    Ingest timestamped sensor readings from the field and track their processing status.
+  </Card>
+</CardGroup>
+
+## API design
+
+ARES uses Django REST Framework's `DefaultRouter` to register all three resources. Every endpoint follows standard REST conventions — `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` are all supported on each resource. The router mounts the API under the `/api/` prefix, so all endpoints are available at `/api/robots/`, `/api/sensores/`, and `/api/lecturas/`.
+
+Django REST Framework's browsable API is enabled by default, letting you explore and test endpoints directly from a browser without any additional tooling.
+
+<Note>
+  The browsable API is available at [http://localhost:8000/api/](http://localhost:8000/api/) when running the development server locally.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Set up ARES locally and make your first API calls in under five minutes.
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/concepts/architecture">
+    Understand how robots, sensors, and readings fit together in the ARES data model.
+  </Card>
+</CardGroup>
